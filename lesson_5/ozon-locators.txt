@@ -1,0 +1,5 @@
+Локатор кнопки Войти - .header2-user-menu-item-link
+Локатор кнопки Заказы - .header2-menu__item.header2-menu__item_type_cabinet
+Локатор ссылки OZON Job (в футере) - .footer-item__link[href*="job"]
+Локатор выбора валюты (верхний левый угол страницы) - .top-panel__currency
+Локатор выпадающего списка "Везде" (в поисковой строке) - .search__tab-content_visible .search__btn .dropdown-menu__button
