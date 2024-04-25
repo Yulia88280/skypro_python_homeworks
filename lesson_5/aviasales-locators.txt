@@ -1,7 +1,0 @@
-Локатор логотипа (html-элемент, содержащий в себе значок и слово "авиасейлс") - .HeaderLogo__logoName
-Локатор поля Откуда - input[data-placeholder="Откуда"]
-Локатор поля Куда - input[data-placeholder="Куда"]
-Локатор поля Когда - input[data-placeholder="Когда"]
-Локатор поля Обратно - input[data-placeholder="Обратно"]
-Локатор чек-бокса "Открыть Ostrovok.ru в новой вкладке" - input[type="checkbox"][name="newTabCheckbox"]
-Локатор кнопки Найти билеты - button[data-test="FlightSearchForm__submit-button"]
