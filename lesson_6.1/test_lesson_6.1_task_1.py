@@ -47,8 +47,8 @@ def test_fill_form_and_validate(browser):
     submit_button.click()
 
     # Проверка подсветки полей
-    zip_code_field = browser.find_element(By.NAME, "zip-code")
-    assert "is-invalid" in zip_code_field.get_attribute("class"), "Zip code field should be highlighted red"
+    zip_code_color = browser.find_element(By.CSS_SELECTOR, 'zip-code')
+    assert zip_code_color == 'rgba(248, 215, 218, 1)'
     
-    highlighted_fields = browser.find_elements(By.CSS_SELECTOR, ".is-valid")
-    assert len(highlighted_fields) == 8, "All fields except Zip code should be highlighted green"
+    first_name_field = browser.find_elements(By.CSS_SELECTOR, '#first-name')
+    assert "alert-success" in first_name_field.get_attribute("class")
