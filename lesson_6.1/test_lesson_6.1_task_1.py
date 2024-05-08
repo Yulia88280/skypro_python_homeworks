@@ -46,9 +46,11 @@ def test_fill_form_and_validate(browser):
     submit_button = browser.find_element(By.XPATH, "//button[@type='submit']")
     submit_button.click()
 
-    # Проверка подсветки полей
-    zip_code_color = browser.find_element(By.CSS_SELECTOR, 'zip-code')
-    assert zip_code_color == 'rgba(248, 215, 218, 1)'
+    # Проверяем цвета всех полей
+    zip_code_color = browser. find_element (By. CSS_SELECTOR, '#zip-code'). value_of_css_property('background-color')
+    assert zip_code_color == 'rgba (248, 215, 218, 1)'
     
-    first_name_field = browser.find_elements(By.CSS_SELECTOR, '#first-name')
-    assert "alert-success" in first_name_field.get_attribute("class")
+    other_fields = ['#first-name, #last-name, #address, #city, #country, #e-mail, #phone, #job-position, #company']
+    for field in other_fields:
+        field_color = browser. find_element (By.CSS_SELECTOR, field). value_of_css_property( 'background-color')
+        assert field_color == 'rgba (209, 231, 221, 1)'
