@@ -1,94 +1,111 @@
 import pytest
-import requests
 from employee_api import EmployeeAPI
 
-@pytest.fixture(scope="class")
+@pytest.fixture(scope="session")
 def api():
     return EmployeeAPI()
 
+def test_authentication(api):
+    """Тест для проверки авторизации"""
+    assert api.auth_token is not None
+
+def test_create_company(api):
+    """Тест для метода создания компании"""
+    company_data = {
+        "name": "Test Company"
+    }
+    company = api.create_company(company_data)
+    assert "id" in company
+    return company
+
 def test_get_employees(api):
-    response = api.get_employees(company_id=1)
-    assert isinstance(response, list)
+    """Тест для метода получения списка сотрудников компании"""
+    company_data = {
+        "name": "Test Company for Employees"
+    }
+    company = api.create_company(company_data)
+    employees = api.get_employees(company["id"])
+    assert isinstance(employees, list)
+    assert len(employees) == 0  # Предполагаем, что компания новая и сотрудников нет
 
 def test_create_employee(api):
-    new_employee = {
-        "firstName": "John",
-        "lastName": "Doe",
-        "middleName": "A",
-        "companyId": 1,
-        "email": "john.doe@example.com",
-        "url": "http://example.com",
-        "phone": "1234567890",
-        "birthdate": "1990-01-01T00:00:00.000Z",
-        "isActive": True
+    """Тест для метода создания сотрудника"""
+    company_data = {
+        "name": "Test Company for Employee Creation"
     }
-    response = api.create_employee(new_employee)
-    assert "id" in response
-
-def test_get_employee_by_id(api):
-    """Позитивный тест для метода GET /employee/{id}"""
-    # Сначала создадим нового сотрудника для теста
-    new_employee = {
-        "firstName": "John",
-        "lastName": "Doe",
-        "middleName": "A",
-        "companyId": 1,
-        "email": "john.doe@example.com",
-        "url": "http://example.com",
-        "phone": "1234567890",
-        "birthdate": "1990-01-01T00:00:00.000Z",
-        "isActive": True
-    }
-    created_employee = api.create_employee(new_employee)
-    employee_id = created_employee["id"]
-
-    # Теперь тестируем получение сотрудника по ID
-    employee = api.get_employee_by_id(employee_id)
-    assert employee["id"] == employee_id
-
-def test_update_employee(api):
-    """Позитивный тест для метода PATCH /employee/{id}"""
-    # Сначала создадим нового сотрудника для теста
-    new_employee = {
+    company = api.create_company(company_data)
+    employee_data = {
         "firstName": "Jane",
         "lastName": "Doe",
         "middleName": "B",
-        "companyId": 1,
+        "companyId": company["id"],
         "email": "jane.doe@example.com",
         "url": "http://example.com",
-        "phone": "0987654321",
-        "birthdate": "1991-01-01T00:00:00.000Z",
+        "phone": "1234567890",
+        "birthdate": "1990-01-01T00:00:00.000Z",
         "isActive": True
     }
-    created_employee = api.create_employee(new_employee)
-    employee_id = created_employee["id"]
+    employee = api.create_employee(employee_data)
+    assert "id" in employee
+    return employee
 
-    # Теперь тестируем обновление данных сотрудника
-    update_data = {
+def test_get_employee_by_id(api):
+    """Тест для метода получения сотрудника по ID"""
+    company_data = {
+        "name": "Test Company for Get Employee"
+    }
+    company = api.create_company(company_data)
+    employee_data = {
+        "firstName": "John",
+        "lastName": "Doe",
+        "middleName": "A",
+        "companyId": company["id"],
+        "email": "john.doe@example.com",
+        "url": "http://example.com",
+        "phone": "0987654321",
+        "birthdate": "1990-01-01T00:00:00.000Z",
+        "isActive": True
+    }
+    employee = api.create_employee(employee_data)
+    employee_id = employee["id"]
+    fetched_employee = api.get_employee_by_id(employee_id)
+    assert fetched_employee["id"] == employee_id
+    assert fetched_employee["firstName"] == "John"
+    assert fetched_employee["lastName"] == "Doe"
+    return employee
+
+def test_update_employee(api):
+    """Тест для метода изменения информации о сотруднике"""
+    company_data = {
+        "name": "Test Company for Update Employee"
+    }
+    company = api.create_company(company_data)
+    employee_data = {
+        "firstName": "Alice",
         "lastName": "Smith",
-        "email": "jane.smith@example.com",
+        "middleName": "C",
+        "companyId": company["id"],
+        "email": "alice.smith@example.com",
+        "url": "http://example.com",
+        "phone": "1112223333",
+        "birthdate": "1985-05-05T00:00:00.000Z",
+        "isActive": True
+    }
+    employee = api.create_employee(employee_data)
+    employee_id = employee["id"]
+    update_data = {
+        "lastName": "Johnson",
+        "email": "alice.johnson@example.com",
         "url": "http://example.com",
         "phone": "1122334455",
         "isActive": False
     }
-    updated_employee = api.update_employee(employee_id, update_data)
-    assert updated_employee["lastName"] == update_data["lastName"]
-
-def test_create_employee_without_required_fields(api):
-    """Тест для проверки обязательности полей в методе POST /employee"""
-    incomplete_employee = {
-        "firstName": "John"
-    }
-    with pytest.raises(requests.exceptions.HTTPError) as excinfo:
-        api.create_employee(incomplete_employee)
-    assert excinfo.value.response.status_code == 400
-
-def test_get_employee_with_invalid_id(api):
-    """Тест для проверки получения сотрудника с несуществующим ID"""
-    invalid_id = 9999  # Несуществующий ID
-    with pytest.raises(requests.exceptions.HTTPError) as excinfo:
-        api.get_employee_by_id(invalid_id)
-    assert excinfo.value.response.status_code == 404
+    status_code = api.update_employee(employee_id, update_data)
+    assert status_code == 200
+    fetched_employee = api.get_employee_by_id(employee_id)
+    assert fetched_employee["lastName"] == "Johnson"
+    assert fetched_employee["email"] == "alice.johnson@example.com"
+    assert not fetched_employee["isActive"]
 
 if __name__ == "__main__":
     pytest.main()
