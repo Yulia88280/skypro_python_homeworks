@@ -2,9 +2,9 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from employee_api import EmployeeAPI
-from db import Base, Employee
+from db import Base, Employee, SessionLocal
 
-DATABASE_URL = "postgresql://x_clients_db_3fmx_user:mzoTw2Vp4Ox4NQH0XKN3KumdyAYE31uq@dpg-cour99g21fec73bsgvug-a.oregon-postgres.render.com/x_clients_db_3fmx"
+DATABASE_URL = "postgresql+psycopg2://x_clients_db_3fmx_user:mzoTw2Vp4Ox4NQH0XKN3KumdyAYE31uq@dpg-cour99g21fec73bsgvug-a.oregon-postgres.render.com/x_clients_db_3fmx"
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -19,6 +19,7 @@ def db():
     session = SessionLocal()
     yield session
     session.close()
+    Base.metadata.drop_all(bind=engine)
 
 @pytest.fixture(scope="function")
 def test_employee(db):
@@ -39,11 +40,9 @@ def test_employee(db):
     db.commit()
 
 def test_authentication(api):
-    """Тест для проверки авторизации"""
     assert api.auth_token is not None
 
 def test_create_company(api):
-    """Тест для метода создания компании"""
     company_data = {
         "name": "Test Company"
     }
@@ -51,18 +50,36 @@ def test_create_company(api):
     assert "id" in company
     return company
 
-def test_get_employees(api):
-    """Тест для метода получения списка сотрудников компании"""
+def test_get_employees(api, db):
     company_data = {
         "name": "Test Company for Employees"
     }
     company = api.create_company(company_data)
+    
+    # Создаем тестовых сотрудников
+    employee1 = Employee(
+        first_name="Test1",
+        last_name="User1",
+        phone="1234567891",
+        email="test1.user@example.com",
+        company_id=company["id"]
+    )
+    employee2 = Employee(
+        first_name="Test2",
+        last_name="User2",
+        phone="1234567892",
+        email="test2.user@example.com",
+        company_id=company["id"]
+    )
+    db.add(employee1)
+    db.add(employee2)
+    db.commit()
+    
     employees = api.get_employees(company["id"])
     assert isinstance(employees, list)
-    assert len(employees) == 0 
+    assert len(employees) == 2  # Два созданных сотрудника
 
-def test_create_employee(api):
-    """Тест для метода создания сотрудника"""
+def test_create_employee(api, db):
     company_data = {
         "name": "Test Company for Employee Creation"
     }
@@ -80,10 +97,14 @@ def test_create_employee(api):
     }
     employee = api.create_employee(employee_data)
     assert "id" in employee
-    return employee
 
-def test_get_employee_by_id(api):
-    """Тест для метода получения сотрудника по ID"""
+    # Проверяем создание сотрудника в базе данных
+    db_employee = db.query(Employee).filter_by(id=employee["id"]).first()
+    assert db_employee is not None
+    assert db_employee.first_name == "Jane"
+    assert db_employee.last_name == "Doe"
+
+def test_get_employee_by_id(api, db):
     company_data = {
         "name": "Test Company for Get Employee"
     }
@@ -101,14 +122,20 @@ def test_get_employee_by_id(api):
     }
     employee = api.create_employee(employee_data)
     employee_id = employee["id"]
+
+    # Проверяем получение сотрудника через API
     fetched_employee = api.get_employee_by_id(employee_id)
     assert fetched_employee["id"] == employee_id
     assert fetched_employee["firstName"] == "John"
     assert fetched_employee["lastName"] == "Doe"
-    return employee
 
-def test_update_employee(api):
-    """Тест для метода изменения информации о сотруднике"""
+    # Проверяем получение сотрудника из базы данных
+    db_employee = db.query(Employee).filter_by(id=employee_id).first()
+    assert db_employee is not None
+    assert db_employee.first_name == "John"
+    assert db_employee.last_name == "Doe"
+
+def test_update_employee(api, db):
     company_data = {
         "name": "Test Company for Update Employee"
     }
@@ -135,10 +162,20 @@ def test_update_employee(api):
     }
     status_code = api.update_employee(employee_id, update_data)
     assert status_code == 200
+
+    # Проверяем обновление сотрудника через API
     fetched_employee = api.get_employee_by_id(employee_id)
     assert fetched_employee["lastName"] == "Johnson"
     assert fetched_employee["email"] == "alice.johnson@example.com"
     assert not fetched_employee["isActive"]
 
+    # Проверяем обновление сотрудника в базе данных
+    db_employee = db.query(Employee).filter_by(id=employee_id).first()
+    assert db_employee is not None
+    assert db_employee.last_name == "Johnson"
+    assert db_employee.email == "alice.johnson@example.com"
+    assert not db_employee.is_active
+
 if __name__ == "__main__":
     pytest.main()
+
