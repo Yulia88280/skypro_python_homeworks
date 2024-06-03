@@ -12,7 +12,7 @@ class EmployeeApi:
             "password": password
         }
         resp = requests.post(f'{self.url}/auth/login', json=creds)
-        resp.raise_for_status()  # Raises an HTTPError if the HTTP request returned an unsuccessful status code
+        resp.raise_for_status() 
         self.token = resp.json().get("userToken")
         return self.token
     
