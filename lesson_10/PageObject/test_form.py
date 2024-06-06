@@ -1,7 +1,7 @@
 import pytest
 import allure
 from selenium import webdriver
-from lesson_10.lesson_7.task_1.page_form import FormPage, ResultPage
+from page_form import FormPage, ResultPage
 
 @pytest.fixture
 def browser():
