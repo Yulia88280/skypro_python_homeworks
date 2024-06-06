@@ -58,4 +58,4 @@ class EmployeeApi:
             json_data = resp.json()
         except (HTTPError, JSONDecodeError):
             json_data = {}
-        return json_data, resp.status_code
+            return json_data, resp.status_code
