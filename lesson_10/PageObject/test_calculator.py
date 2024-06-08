@@ -40,4 +40,4 @@ def test_calculator(browser):
     
     with allure.step("Проверяем результат"):
         result = calculator_page.get_result()
-        assert result == "15", f"Ожидаемый результат: 15, но получили: {result}"
+        assert result == "15", f"Ожидаемый результат: 15, но получили: {result}" #результат "15" не отображается, баг 
