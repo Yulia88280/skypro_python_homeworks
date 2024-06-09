@@ -1,7 +1,7 @@
 import pytest
 import allure
 from selenium import webdriver
-from page_calculator import CalculatorPage
+from page_calculator import CalculatorPage  # Убедитесь, что путь к модулю корректен
 
 @pytest.fixture
 def browser():
@@ -38,6 +38,9 @@ def test_calculator(browser):
     with allure.step("Нажимаем на кнопку '='"):
         calculator_page.click_button("=")
     
+    with allure.step("Ожидаем завершения вычислений"):
+        calculator_page.wait_for_spinner()
+    
     with allure.step("Проверяем результат"):
         result = calculator_page.get_result()
-        assert result == "15", f"Ожидаемый результат: 15, но получили: {result}" #результат "15" не отображается, баг 
+        assert result == "15", f"Ожидаемый результат: 15, но получили: {result}"
