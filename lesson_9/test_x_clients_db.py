@@ -156,4 +156,4 @@ def test_patch_employee(company):
     assert patch_status_code == 200
     assert updated_employer.get("lastName") == updated_data["lastName"]
     assert updated_employer.get("email") == updated_data["email"]
-   # assert updated_employer.get("phone") == updated_data["phone"] номер не меняется баг
+    # assert updated_employer.get("phone") == updated_data["phone"] номер не меняется баг
